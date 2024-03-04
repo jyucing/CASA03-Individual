@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Global Tourism's Recovery from COVID-19</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .tooltip {
+      position: absolute;
+      background-color: white;
+      border: 1px solid #ddd;
+      padding: 10px;
+      pointer-events: none;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <svg width="1600" height="800" id="mainsvg" class="svgs"></svg>
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    let svg = d3.select('svg');
+    const width = +svg.attr('width');
+    const height = +svg.attr('height');
+    const margin = { top: 60, right: 60, bottom: 10, left: 60 };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+    const g = svg.append('g').attr('id', 'maingroup')
+      .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+    const projection = d3.geoNaturalEarth1();
+    const pathGenerator = d3.geoPath().projection(projection);
+
+    const tooltip = d3.select("#tooltip");
+
+    // 定义颜色比例尺
+    const colorScale = d3.scaleSequential(d3.interpolateViridis);
+
+    d3.json('https://raw.githubusercontent.com/jyucing/CASA03-IW/main/Data/ITA.geojson').then(
+      function (data) {
+        projection.fitSize([innerWidth, innerHeight], data);
+
+        const recRates = data.features.map(feature => feature.properties.rec_rate);
+        const recRateExtent = d3.extent(recRates);
+        colorScale.domain(recRateExtent);
+
+        const paths = g.selectAll('path')
+          .data(data.features)
+          .enter().append('path')
+          .attr('d', pathGenerator)
+          .attr('fill', d => {
+            const recRate = d.properties.rec_rate;
+            return recRate ? colorScale(recRate) : "gray"; // Fallback color if rec_rate is not defined
+          })
+          .attr('stroke', 'white')
+          .attr('stroke-width', 1)
+          .on('click', function (d) {
+            const countryName = d.properties.country;
+            const csvData = "Your ITA.csv data here"; // Replace with your ITA.csv data
+            showTooltip(d3.event.pageX, d3.event.pageY, countryName, csvData);
+          });
+
+        function showTooltip(x, y, countryName, csvData) {
+          tooltip.style("display", "block")
+            .style("left", x + "px")
+            .style("top", y + "px")
+            .html(`<strong>${countryName}</strong><br/>${createLineChart(csvData)}`);
+        }
+
+        function createLineChart(csvData) {
+          // Implement code to create line chart from csvData
+          return "Line chart here"; // Replace with your line chart code
+        }
+      }
+    );
+  </script>
+</body>
+</html>
