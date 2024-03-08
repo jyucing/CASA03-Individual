@@ -336,9 +336,9 @@ Promise.all([d3.csv("https://raw.githubusercontent.com/jyucing/CASA03-Individual
         type: 'fill',
         source: {
           type: 'vector',
-          url: 'mapbox://jyucing.8razo2ix' // Your Mapbox tileset Map ID
+          url: 'mapbox://jyucing.9ucz2uws' // Your Mapbox tileset Map ID
         },
-        'source-layer': 'ITA_drop-82oljg', // name of tileset
+        'source-layer': 'ITA0307-7ogbl9', // name of tileset
         paint: {
           'fill-color': {
             property: 'rec_rate',
@@ -352,9 +352,9 @@ Promise.all([d3.csv("https://raw.githubusercontent.com/jyucing/CASA03-Individual
           },
           'fill-opacity': [
             'case',
-            ['==', ['typeof', ['get', 'rec_rate']], 'number'], // 检查属性值是否为数值
-            0.7, // 属性值为数值时的透明度
-            0 // 属性值为空时的透明度
+            ['==', ['typeof', ['get', 'rec_rate']], 'number'], 
+            0.7, 
+            0
           ]
         },
           
@@ -414,9 +414,9 @@ Promise.all([d3.csv("https://raw.githubusercontent.com/jyucing/CASA03-Individual
         type: 'fill',
         source: {
           type: 'vector',
-          url: 'mapbox://jyucing.clpzesx8' // Your Mapbox tileset Map ID
+          url: 'mapbox://jyucing.d52sueu2' // Your Mapbox tileset Map ID
         },
-        'source-layer': 'ITE_drop-cctzqs', // name of tileset
+        'source-layer': 'ITE0307-do9lz8', // name of tileset
         paint: {
           'fill-color': {
             property: 'rec_rate',
@@ -492,9 +492,9 @@ Promise.all([d3.csv("https://raw.githubusercontent.com/jyucing/CASA03-Individual
         type: 'fill',
         source: {
           type: 'vector',
-          url: 'mapbox://jyucing.2ennrvs3' // Your Mapbox tileset Map ID
+          url: 'mapbox://jyucing.c2lljtzy' // Your Mapbox tileset Map ID
         },
-        'source-layer': 'DTT_drop-akn7ky', // name of tileset
+        'source-layer': 'DTT0307-6ocoyy', // name of tileset
         paint: {
           'fill-color': {
             property: 'rec_rate',
@@ -574,20 +574,19 @@ Promise.all([d3.csv("https://raw.githubusercontent.com/jyucing/CASA03-Individual
         map.setLayoutProperty('ITA', 'visibility', 'visible');
         map.setLayoutProperty('ITE', 'visibility', 'none');
         map.setLayoutProperty('DTT', 'visibility', 'none');
-        })
+        });
 
         document.getElementById("layer2").addEventListener("click", function(){
         map.setLayoutProperty('ITA', 'visibility', 'none');
         map.setLayoutProperty('ITE', 'visibility', 'visible');
         map.setLayoutProperty('DTT', 'visibility', 'none');
-        })
+        });
 
-        
         document.getElementById("layer3").addEventListener("click", function(){
         map.setLayoutProperty('ITA', 'visibility', 'none');
         map.setLayoutProperty('ITE', 'visibility', 'none');
         map.setLayoutProperty('DTT', 'visibility', 'visible');
-        })
+        });
              
     });
 })
