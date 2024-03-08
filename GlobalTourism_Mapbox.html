@@ -152,7 +152,7 @@
     .legend-gradient {
       width: 275px;
       height: 20px;
-      background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(70, 127, 143, 0.7), rgba(206, 99, 71, 0.7), rgba(185, 59, 7, 0.7));
+      background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(70, 127, 143, 0.7), rgba(179, 167, 184, 0.7), rgba(133, 112, 143, 0.7));
       border-radius: 5px;
     }
       
@@ -266,7 +266,7 @@
           </table>
       </div>
       <div class="legend-gradient"></div>
-      <div class="legend-note"><b>Note:</b> Color turns orange when <i>Recovery Index</i> ≥ 1.</div>
+      <div class="legend-note"><b>Note:</b> Color turns purple when <i>Recovery Index</i> ≥ 1.</div>
   </div>
 
   <div class="tooltip" id="tooltip"></div> 
@@ -276,7 +276,7 @@
     mapboxgl.accessToken = 'pk.eyJ1Ijoianl1Y2luZyIsImEiOiJjbG9tczk0amowNm5iMmpxc2lhOWE5aHA5In0.UgGPbG5xg3B2qUfyCCTauw';
     const map = new mapboxgl.Map({
       container: 'map',
-      style: 'mapbox://styles/jyucing/cltg1b9ho001s01pjc3flbd4z',
+      style: 'mapbox://styles/jyucing/clthcufda001b01qo5b0m4qbh',
       center: [-28.795, 25.371],
       zoom: 1.18
     });
@@ -346,8 +346,8 @@ Promise.all([d3.csv("https://raw.githubusercontent.com/jyucing/CASA03-Individual
             stops: [
               [0, '#FFFFFF'],
               [1, '#467F8F'],
-              [1.000000000000000000001, '#CE6347'],
-              [1.3, '#B93B07']
+              [1.000000000000000000001, '#B3A7B8'],
+              [1.3, '#85708F']
             ]
           },
           'fill-opacity': [
@@ -355,7 +355,11 @@ Promise.all([d3.csv("https://raw.githubusercontent.com/jyucing/CASA03-Individual
             ['==', ['typeof', ['get', 'rec_rate']], 'number'], 
             0.7, 
             0
-          ]
+          ],
+          'fill-opacity-transition':{
+              duration: 500,
+              delay: 0
+          }
         },
           
         layout: {
@@ -424,8 +428,8 @@ Promise.all([d3.csv("https://raw.githubusercontent.com/jyucing/CASA03-Individual
             stops: [
               [0, '#FFFFFF'],
               [1, '#467F8F'],
-              [1.000000000000000000001, '#CE6347'],
-              [1.3, '#B93B07']
+              [1.000000000000000000001, '#B3A7B8'],
+              [1.3, '#85708F']
             ]
           },
           'fill-opacity': [
@@ -492,9 +496,9 @@ Promise.all([d3.csv("https://raw.githubusercontent.com/jyucing/CASA03-Individual
         type: 'fill',
         source: {
           type: 'vector',
-          url: 'mapbox://jyucing.amynw45e' // Your Mapbox tileset Map ID
+          url: 'mapbox://jyucing.5uwafpvx' // Your Mapbox tileset Map ID
         },
-        'source-layer': 'DTT0307-bx1lrn', // name of tileset
+        'source-layer': 'DTT0307-0gh6zc', // name of tileset
         paint: {
           'fill-color': {
             property: 'rec_rate',
@@ -502,8 +506,8 @@ Promise.all([d3.csv("https://raw.githubusercontent.com/jyucing/CASA03-Individual
             stops: [
               [0, '#FFFFFF'],
               [1, '#467F8F'],
-              [1.000000000000000000001, '#CE6347'],
-              [1.3, '#B93B07']
+              [1.000000000000000000001, '#B3A7B8'],
+              [1.3, '#85708F']
             ]
           },
           'fill-opacity': [
@@ -574,6 +578,12 @@ Promise.all([d3.csv("https://raw.githubusercontent.com/jyucing/CASA03-Individual
         map.setLayoutProperty('ITA', 'visibility', 'visible');
         map.setLayoutProperty('ITE', 'visibility', 'none');
         map.setLayoutProperty('DTT', 'visibility', 'none');
+        map.setPaintProperty('ITA', 'fill-opacity', [
+            'case',
+            ['==', ['typeof', ['get', 'rec_rate']], 'number'], 
+            0.7, 
+            0
+          ])
         });
 
         document.getElementById("layer2").addEventListener("click", function(){
@@ -647,14 +657,14 @@ function drawLine(o) {
     .attr("class", "dot")
     .attr("cx", d => x(d.year))
     .attr("cy", d => y(d.value))
-    .attr("r", d => (d.year === 2019 || d.year === 2022) ? 6 : 4) // 根据年份设置不同的半径
+    .attr("r", d => (d.year === 2019 || d.year === 2022) ? 5 : 4) // 根据年份设置不同的半径
     .attr("fill", d => {
     if (d.year === 2019 || d.year === 2022) {
-        return "rgba(0, 191, 255, 0.5)"; // 如果年份为2019或者2022，则填充颜色为蓝色
+        return "rgba(182, 90, 117, 0.7)"; 
     } else if (d.value === 0) {
-        return "transparent"; // 如果value值为0，则填充颜色为透明
+        return "transparent"; 
     } else {
-        return "rgba(0, 0, 0, 0.7)"; // 其他情况下填充颜色为黑色
+        return "rgba(70, 127, 143, 0.7)"; 
     }
     })
     .on("mousemove", function(d) {
