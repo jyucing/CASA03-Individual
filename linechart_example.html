@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Global Tourism Chart 2003-2022</title>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+
+<!--Load the chart libraries. Dimple is built on D3, and you need to also add D3-->
+<script charset="utf-8" src="https://d3js.org/d3.v4.min.js"></script>
+<script charset="utf-8" src="https://cdnjs.cloudflare.com/ajax/libs/dimple/2.3.0/dimple.latest.min.js"></script>
+
+<style>    
+    #chartContainer {width: 840px; margin: auto; margin-top: 50px; }
+    #chartContainer p {margin-left: 60px; margin-bottom: 5px; margin-top: 0; padding: 0;}
+    #charttitle {font: bold 22px  Verdana, sans-serif;}
+</style>
+
+</head>
+
+<body>
+
+<!--This is the div container for the chart-->
+<div id="chartContainer">
+    <p id="charttitle">Country Name</p>
+    <p id="chartsubhead">Inbound Tourism Arrivals in 20 Years (2003-2022)</p>
+</div>
+
+<script>
+//This statement loads the data from the CSV file, and then runs the function after the CSV is loaded. CityData is an array that contains the CSV data
+d3.csv("https://raw.githubusercontent.com/jyucing/CASA03-Individual/main/output/csv/ITA_extract.csv", function(CSVData) {
+
+    var CSVDataIndex = 1;    // Here we select which row of the csv data is going to be loaded. Change the number to change which city is shown in the chart
+    console.log(CSVData[0]); // Show the data of the row in the console
+
+    document.getElementById("charttitle").innerHTML = CSVData[0].country; // The name of the city and country is inserted into the chart title
+    var svg = dimple.newSvg("#chartContainer", 1000, 640); // The chart is an svg variable assigned to the chartcontainer div. It's width and height are also assigned here
+
+    //This statement loads the data from the CSV file, and then runs the function after the CSV is loaded. CityData is an array that contains the CSV data
+d3.csv("https://raw.githubusercontent.com/jyucing/CASA03-Individual/main/output/csv/ITA_extract.csv", function(CSVData) {
+    // 预处理数据，排除空值
+    var chartdata = [];
+    for (var i = 0; i < CSVData.length; i++) {
+        var valid = true;
+        for (var year = 2003; year <= 2022; year++) {
+            if (CSVData[i][year] === "") {
+                valid = false;
+                break;
+            }
+        }
+        if (valid) {
+            chartdata.push(CSVData[i]);
+        }
+    }
+
+    var myChart = new dimple.chart(svg, chartdata);  // Create the chart
+    myChart.setBounds(60, 15, 700, 460);            // Set the chart bounds within the svg container
+
+    var x = myChart.addTimeAxis("x", "Year", "%Y", "%Y");  // Define the x axis. The latter statements define the date format which we want to be year only
+    x.timeInterval = 1;
+
+    var y = myChart.addMeasureAxis("y", "ITA (Thousands)"); // Define the y axis
+    y.ticks = 6;
+
+    myChart.addLegend(800, 20, 100, 300, "left");
+
+    myChart.draw(500); // Draw the chart. The number is the animation delay in miliseconds
+});
+});
+    
+</script>
+
+</body>
+</html>

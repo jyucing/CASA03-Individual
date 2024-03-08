@@ -37,7 +37,7 @@
     // 定义颜色比例尺
     const colorScale = d3.scaleSequential(d3.interpolateViridis);
 
-    d3.json('https://raw.githubusercontent.com/jyucing/CASA03-IW/main/Data/ITA.geojson').then(
+    d3.json('https://raw.githubusercontent.com/jyucing/CASA03-Individual/main/output/ITA/ITA.geojson').then(
       function (data) {
         projection.fitSize([innerWidth, innerHeight], data);
 

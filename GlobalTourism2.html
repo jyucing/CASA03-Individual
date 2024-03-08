@@ -1,77 +1,364 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Global Tourism's Recovery from COVID-19</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-  </head>
-    
-  <body>
-    <svg width="1600" height="800" id="mainsvg" class="svgs"></svg>
-      
-    <script>
+
+<head>
+  <title>Global Tourism's Recovery from COVID-19</title>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <!-- <script charset="utf-8" src="https://cdnjs.cloudflare.com/ajax/libs/dimple/2.3.0/dimple.latest.min.js"></script> -->
+
+  <style>
+    body {
+      background-color: #F1F9F9;
+      overflow: hidden;
+    }
+
+    .tooltip {
+      position: absolute;
+      background-color: white;
+      border: 1px solid #ddd;
+      padding: 10px;
+      pointer-events: none;
+    }
+
+    .map-overlay {
+      font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+      position: absolute;
+      width: 17%;
+      top: 0;
+      left: 0;
+      padding: 10px;
+    }
+
+    .map-overlay .map-overlay-text {
+      background-color: rgba(255, 255, 255, 0.6);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.20);
+      border-radius: 5px;
+      width: 225px;
+      padding: 15px;
+      margin-bottom: 10px;
+    }
+
+    .map-overlay table {
+      border: none;
+      width: 100%;
+    }
+
+    .map-overlay h2 {
+      line-height: 24px;
+      display: block;
+      margin: 0 0 10px;
+    }
+
+    .map-overlay label {
+      font: 14px/16px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+      vertical-align: bottom;
+      margin: 0;
+      padding: 0;
+    }
+
+    .map-overlay input {
+      display: inline;
+      vertical-align: middle;
+      margin: 5px;
+      padding: 0;
+    }
+
+    .map-overlay p.credit {
+      margin: 5px 0 0 0;
+      padding: 0;
+    }
+
+    .map-overlay p.Index Calculation {
+      margin: 5px 0 0 0;
+      padding: 0;
+    }
+
+    .legendBlue {
+      position: absolute;
+      left: 20px;
+      bottom: 0px;
+      font-size: 12px;
+    }
+
+    .legendRed {
+      position: absolute;
+      left: 20px;
+      bottom: 60px;
+      font-size: 12px;
+    }
+
+    .legend rect {
+      width: 100px;
+      height: 15px;
+      margin-bottom: 100px;
+    }
+
+    .legendNoData {}
+  </style>
+
+</head>
+
+
+<body>
+  <div class="map-overlay">
+    <div class="map-overlay-text">
+      <h2>Recovery Index of Global Tourism (2022)</h2>
+      <table>
+        <tr>
+          <td><input type="radio" name="layers" id="layer1" value="ITA" checked><label>Inbound Tourism Arrivals &nbsp;
+              &nbsp;</label></td>
+        </tr>
+        <tr>
+          <td><input type="radio" name="layers" id="layer2" value="ITE"><label>Inbound Tourism Expenditure </label>
+          <td>
+        </tr>
+        <tr>
+          <td><input type="radio" name="layers" id="layer3" value="DTT"><label>Domestic Tourism Trips </label></td>
+        </tr>
+        <tr>
+          <td><input type="radio" name="layers" id="layer4" value="EPM"><label>Employment in Tourism</label></td>
+        </tr>
+      </table>
+      <p class="Intro"><i>Write Introduction here</i></p>
+      <p class="Index Calculation"><b>Recovery Index</b> = Index of 2022 / Index of 2019 (2019 is the last year before
+        COVID-19)</p>
+      <p class="credit"><b>Data Source:</b> <a href="https://www.unwto.org/tourism-statistics/key-tourism-statistics">UN
+          Tourism</a></p>
+    </div>
+  </div>
+
+  <div class="legendBlue" id="legendBlue"></div>
+  <div class="legendRed" id="legendRed"></div>
+  <div class="legendNoData" id="legendNoData"></div>
+
+  <svg width="1600" height="350" id="mainsvg" class="svgs">
+    <pattern id="diagonalHatch" width="5" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="#FFFFFF" />
+      <line x1="0" y1="0" x2="1" y2="100" style="stroke: #cccccc; stroke-width:0.6"></line>
+    </pattern>
+  </svg>
+
+  </svg>
+  <div class="tooltip" id="tooltip"></div>
+
+
+
+  <script>
 
     let svg = d3.select('svg');
+    const initialZoomLevel = 1;
     const width = +svg.attr('width');
     const height = +svg.attr('height');
-    const margin = {top: 60, right: 60, bottom: 10, left: 60};
+    const margin = { top: 60, right: 60, bottom: 10, left: 60 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     const g = svg.append('g').attr('id', 'maingroup')
-    .attr('transform', `translate(${margin.left}, ${margin.top})`);
+      .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-    // convert dataPath to svgPath; 
-    const projection = d3.geoNaturalEarth1();
-    //const projection = d3.geoTransverseMercator();
+    const projection = d3.geoMercator();
     const pathGenerator = d3.geoPath().projection(projection);
+    // Pop-up
+    /// 创建 D3.js 中的 Popup（tooltip）
+    var mypopup = d3.select('body').append('div')
+      .attr('class', 'tooltip')
+      .style('opacity', 0)
+      .style('position', 'absolute')
+      .style('pointer-events', 'none')
+      .style('background-color', 'white')
+      .style('border', '1px solid transparent')
+      .style('padding', '10px')
+      .style('border-radius', '10px')
+      .style('font-size', '12px')
+      .style('z-index', 9999);
 
-    // setting up the tip tool; 
-    //const tip = d3.tip()
-    //.attr('class', 'd3-tip').html(function(d) { return d.properties.name });
-    //svg.call(tip);
+    // Create Zooming
+    const zoom = d3.zoom()
+      .scaleExtent([1, 15]) // 设置最小和最大缩放比例
+      .on("zoom", zoomed);
+    svg.call(zoom);// 将缩放行为应用到 svg 元素上
+    function zoomed(event) {
+      g.attr("transform", event.transform);
+      // Stroke width chages with zooming
+      const strokeWidth = 1 / event.transform.k;
+      g.selectAll('path')
+        .attr('stroke-width', strokeWidth);
+    }
+    // 函数用于调整SVG元素大小和重新投影地图
+    function resize(data) {
+      // 获取浏览器窗口的宽度和高度
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+      // 设置SVG元素的宽度和高度为浏览器窗口的宽度和高度
+      svg.attr("width", screenWidth)
+        .attr("height", screenHeight);
+      // 重新投影地图以适应新的尺寸
+      projection.fitSize([screenWidth, screenHeight], data);
+      g.selectAll('path').attr('d', pathGenerator);
+      // 设置默认的缩放级别
+      svg.call(zoom.transform, d3.zoomIdentity.scale(initialZoomLevel));
+    }
+    // 将resize函数绑定到浏览器窗口大小调整事件上
+    window.addEventListener('resize', () => resize(data));
 
-    let worldmeta;
-    //let lastid = undefined;
 
-    d3.json('https://raw.githubusercontent.com/jyucing/CASA03-IW/main/Data/ITA.geojson').then(
-        function(data){
+    // Mapping
+    d3.json('output/ITA/ITA_compress2.geojson').then(
+      function (data) {
+        console.log(data)
+        resize(data);
+        
+          
+        const recRates = data.features.map(feature => feature.properties.rec_rate);
+        const recRateExtent = d3.extent(recRates);
 
-            worldmeta = data;
-            
-            // this code is really important if you want to fit your geoPaths (map) in your SVG element; 
-            projection.fitSize([innerWidth, innerHeight], worldmeta);
+        /// Blue color scale for rec_rate < 1
+        const colorScaleBlue = d3.scaleQuantile()
+          .domain([0, 1])
+          .range(d3.schemeBlues[5]);
 
-            // perform data-join; 
-            const paths = g.selectAll('path')
-            .data(data.features, d => d.properties.country)
-            .enter().append('path')
-            .attr('d', pathGenerator)
-            .attr('fill', 'black')
-            .attr('stroke', 'white')
-            .attr('stroke-width', 1)
-            .on('mouseover',function(d){
-              d3.select(this)
-              .attr("opacity", 0.5)
-              .attr("stroke","white")
-              .attr("stroke-width", 2);
-            })
-            .on('mouseout', function(d){
-              d3.select(this)
-              .attr("opacity", 1)
-              .attr("stroke","black")
-              .attr("stroke-width",1);
-            })
-            //.on('click', function(d){
-              //d3.event.preventDefault();
-              //if(lastid !== d.properties.country){
-                //tip.show(d)
-                //lastid = d.properties.country;
-              //}else{
-                //tip.hide(d)
-              //}
-            //})
-        }
-    );
+        // Red color scale for rec_rate >= 1
+        const colorScaleRed = d3.scaleQuantile()
+          .domain([1, recRateExtent[1]])
+          .range(d3.schemeReds[5]);
+
+        const paths = g.selectAll('path')
+          .data(data.features)
+          .enter()
+          .append('path')
+          .attr('d', pathGenerator)
+          .attr('fill', d => {
+            const recRate = d.properties.rec_rate;
+            if (recRate >= 1) {
+              return colorScaleRed(recRate);
+            } if (recRate < 1 && recRate !== undefined && recRate !== null) {
+              return colorScaleBlue(recRate);
+            } else {
+              return "url(#diagonalHatch)";
+            }
+          })
+          .attr('stroke', 'black')
+          .attr('stroke-opacity', 0.25)
+          .attr('stroke-width', 0.8);
+
+        // Append the legend.
+        createLegend(colorScaleBlue, { title: "Recovery Index<1", width: 260, ticksArray: [0, 1] }, "legendBlue");
+        createLegend(colorScaleRed, { title: "Recovery Index≥1", width: 260, ticksArray: [1, recRateExtent[1].toFixed(3)] }, "legendRed");
+
+
+        /// 添加事件监听器，在悬停时显示 Popup
+        paths
+          .on('mousemove', function (e, d) {
+            // console.log('Mouse over event triggered', d);
+            var coordinates = d3.pointer(e);
+            if (d.properties.rec_rate) {
+              mypopup
+                .style('left', (coordinates[0] + 20) + 'px')
+                .style('top', (coordinates[1] + 20) + 'px')
+                .style('opacity', .9);
+              // 改成折线图
+              var popupContent = "<h3>" + d.properties.country + "</h3><b>Recovery Index:</b> " + d.properties.rec_rate.toFixed(3) + "<br />" + "<br />" + "<br />" + "<b>Inbound Tourism Arrivals</b> (Thousands)" + "<br />";
+              // 循环遍历所有年份属性，检查是否为 null 或 undefined，如果不是则添加到 popup 内容中
+              for (var i = 2002; i <= 2022; i++) {
+                var year = i.toString();
+                if (d.properties[year] !== null && d.properties[year] !== undefined) {
+                  popupContent += "<b>" + year + "</b>" + "<b>:</b> " + d.properties[year] + "<br/>";
+                }
+              }
+              mypopup.html(popupContent);
+            }
+
+            // if ( !== null && d.properties.rec_rate !== undefined) {
+            //   mypopup.transition()
+            //     .duration(200)
+            //     .style('opacity', .9)
+            //     .style('left', (coordinates[0] + 10) + 'px')
+            //     .style('top', (coordinates[1] - 28) + 'px');
+            //   var popupContent = "<h3>" + d.properties.country + "</h3><b>Recovery Index:</b> " + d.properties.rec_rate.toFixed(3) + "<br />" + "<br />" + "<br />" + "<b>Inbound Tourism Arrivals</b> (Thousands)" + "<br />";
+            //   //// 循环遍历所有年份属性，检查是否为 null 或 undefined，如果不是则添加到 popup 内容中
+            //   // for (var i = 2002; i <= 2022; i++) {
+            //   //   var year = i.toString();
+            //   //   if (d.properties[year] !== null && d.properties[year] !== undefined) {
+            //   //     popupContent += "<b>" + year + "</b>" + "<b>:</b> " + d.properties[year] + "<br/>";
+            //   //   }
+            //   // }
+            //   mypopup.html(popupContent);
+            // }
+            // mypopup.html(popupContent);
+          })
+          .on('mouseleave', function (e, d) {
+            mypopup
+              .style('opacity', 0);
+          })
+          .style('cursor', function (d) { return (d.properties.rec_rate !== null && d.properties.rec_rate !== undefined) ? 'pointer' : 'default'; }); // 修改鼠标样式
+      });
+
+    // Create a legend
+    function createLegend(colorScale, options, legendId) {
+      const { title, width, ticksArray } = options;
+
+      const legendGroup = d3.select("#" + legendId)
+        .append("svg")
+        .attr("width", width)
+        .attr("height", 50)
+        .append("g")
+        .attr("transform", "translate(0, 20)");
+
+      /// Title
+      legendGroup.append("text")
+        .attr("x", 0)
+        .attr("y", -10)
+        .attr("font-size", "12px")
+        .attr("font-weight", "bold")
+        .text(title);
+
+      /// Gradient legend
+      const linearGradient = legendGroup.append("defs").append("linearGradient")
+        .attr("id", "legendGradient")
+        .attr("x1", "0%").attr("y1", "0%")
+        .attr("x2", "100%").attr("y2", "0%");
+      linearGradient.selectAll("stop")
+        .data(colorScale.range())
+        .enter().append("stop")
+        .attr("offset", (d, i) => `${i / (colorScale.range().length - 1) * 100}%`)
+        .attr("stop-color", d => d);
+
+      const linearGradientRed = legendGroup.append("defs").append("linearGradient")
+        .attr("id", legendId + "Gradient") // 使用唯一的渐变ID
+        .attr("x1", "0%").attr("y1", "0%")
+        .attr("x2", "100%").attr("y2", "0%");
+      linearGradientRed.selectAll("stop")
+        .data(colorScale.range())
+        .enter().append("stop")
+        .attr("offset", (d, i) => `${i / (colorScale.range().length - 1) * 100}%`)
+        .attr("stop-color", d => d);
+
+      legendGroup.append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", 150)
+        .attr("height", 10)
+        .style("fill", "url(#" + legendId + "Gradient)");
+
+      /// Labels
+      legendGroup.selectAll(".legend-label")
+        .data(ticksArray)
+        .enter().append("text")
+        .attr("class", "legend-label")
+        .attr("x", (d, i) => (i / (ticksArray.length - 1)) * width)
+        .attr("y", 25)
+        .attr("text-anchor", (d, i) => (i === 0) ? "start" : (i === ticksArray.length - 1) ? "end" : "middle")
+        .text(d => d);
+
+      // 获取最后一个标签的选择集
+      const lastLabel = legendGroup.selectAll(".legend-label").filter((d, i) => i === ticksArray.length - 1);
+
+      // 修改最后一个标签的位置
+      lastLabel.attr("x", 150);
+    }
+
 
   </script>
-  </body>
+</body>
+
 </html>

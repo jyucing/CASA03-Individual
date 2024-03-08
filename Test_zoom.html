@@ -39,7 +39,7 @@
     }
 
     // 加载地图数据并渲染
-    d3.json("https://raw.githubusercontent.com/jyucing/CASA03-IW/main/Data/ITA.geojson").then(function(data) {
+    d3.json("https://raw.githubusercontent.com/jyucing/CASA03-Individual/main/output/ITA/ITA.geojson").then(function(data) {
       const projection = d3.geoMercator()
         .fitSize([width, height], data);
 
